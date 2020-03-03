@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.activity_main)
 
       // Your code
-      retrieve_token_button.setOnClickListener {
+      button_retrieve_token.setOnClickListener {
         // Get token
         if ( checkGooglePlayServices() ) {
           // [START retrieve_current_token]
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
     val bundle = intent.extras
     if (bundle != null) { //bundle must contain all info sent in "data" field of the notification
-      notification_text.text = bundle.getString("text")
+      text_view_notification.text = bundle.getString("text")
     }
   }
 
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
   private val messageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent) {
-      notification_text.text = intent.extras?.getString("message")
+      text_view_notification.text = intent.extras?.getString("message")
     }
   }
 
