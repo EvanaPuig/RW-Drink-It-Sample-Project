@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2020 Razeware LLC
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
  * distribute, sublicense, create a derivative work, and/or sell copies of the
  * Software in any work that is designed, intended, or marketed for pedagogical or
@@ -18,11 +18,11 @@
  * or information technology.  Permission for such use, copying, modification,
  * merger, publication, distribution, sublicensing, creation of derivative works,
  * or sale is expressly withheld.
- * 
+ *
  * This project and source code may use libraries or frameworks that are
  * released under various Open-Source licenses. Use of those libraries and
  * frameworks are governed by their own individual licenses.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,71 +34,45 @@
 
 package com.raywenderlich.android.drinkit
 
-import android.os.Bundle
+import android.R.id.message
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.iid.FirebaseInstanceId
-import kotlinx.android.synthetic.main.activity_main.*
-
-/**
- * Main Screen
- */
-class MainActivity : AppCompatActivity() {
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    // Switch to AppTheme for displaying the activity
-    setTheme(R.style.AppTheme)
-
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_main)
-
-      // Your code
-      retrieve_token_button.setOnClickListener {
-        // Get token
-        if ( checkGooglePlayServices() ) {
-          // [START retrieve_current_token]
-          FirebaseInstanceId.getInstance().instanceId
-              .addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                  Log.w(TAG, getString(R.string.token_error), task.exception)
-                  return@OnCompleteListener
-                }
-
-                // Get new Instance ID token
-                val token = task.result?.token
-
-                // Log and toast
-                val msg = getString(R.string.token_prefix, token)
-                Log.d(TAG, msg)
-                Toast.makeText(baseContext, msg, Toast.LENGTH_LONG).show()
-              })
-          // [END retrieve_current_token]
-        } else {
-          //You won't be able to send notifications to this device
-        }
-      }
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 
 
+class MyFirebaseMessagingService : FirebaseMessagingService() {
 
+  override fun onNewToken(token: String) {
+    Log.d(TAG, "Refreshed token: $token")
+
+    getSharedPreferences("_", MODE_PRIVATE).edit().putString("fcm_token", token).apply();
   }
 
-  private fun checkGooglePlayServices(): Boolean {
-    val status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
-    return if (status != ConnectionResult.SUCCESS) {
-      Log.e(TAG, "Error")
-      // ask user to update google play services.
-      false
+  override fun onMessageReceived(remoteMessage: RemoteMessage) {
+    super.onMessageReceived(remoteMessage)
+
+    Log.d(TAG, "From: ${remoteMessage.from}")
+
+    var processLater = false
+
+    if (/* Check if data needs to be processed by long running job */ processLater) {
+      //scheduleJob()
     } else {
-      Log.i(TAG, "Google play services updated")
-      true
+      // Handle message within 10 seconds
+      handleNow()
     }
   }
 
+  private fun handleNow() {
+    val handler = Handler(Looper.getMainLooper())
+
+    handler.post(Runnable { Toast.makeText(baseContext, getString(R.string.handle_notification_now), Toast.LENGTH_LONG).show() })
+  }
+
   companion object {
-    private const val TAG = "MainActivity"
+    private const val TAG = "MyFirebaseMessagingS"
   }
 }
