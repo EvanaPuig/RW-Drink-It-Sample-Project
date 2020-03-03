@@ -34,10 +34,15 @@
 
 package com.raywenderlich.android.drinkit
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.tasks.OnCompleteListener
@@ -82,8 +87,29 @@ class MainActivity : AppCompatActivity() {
         }
       }
 
+    val bundle = intent.extras
+    if (bundle != null) { //bundle must contain all info sent in "data" field of the notification
+      notification_text.text = bundle.getString("text")
+    }
+  }
 
 
+  override fun onStart() {
+    super.onStart()
+    LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver,
+        IntentFilter("MyData")
+    )
+  }
+
+  override fun onStop() {
+    super.onStop()
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
+  }
+
+  private val messageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent) {
+      notification_text.setText(intent.extras?.getString("message"))
+    }
   }
 
   private fun checkGooglePlayServices(): Boolean {

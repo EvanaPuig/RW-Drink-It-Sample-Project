@@ -34,16 +34,21 @@
 
 package com.raywenderlich.android.drinkit
 
-import android.R.id.message
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-
 class MyFirebaseMessagingService : FirebaseMessagingService() {
+  private var broadcaster: LocalBroadcastManager? = null
+
+  override fun onCreate() {
+    broadcaster = LocalBroadcastManager.getInstance(this)
+  }
 
   override fun onNewToken(token: String) {
     Log.d(TAG, "Refreshed token: $token")
@@ -62,14 +67,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
       //scheduleJob()
     } else {
       // Handle message within 10 seconds
-      handleNow()
+      handleNow(remoteMessage)
     }
   }
 
-  private fun handleNow() {
+  private fun handleNow(remoteMessage: RemoteMessage) {
     val handler = Handler(Looper.getMainLooper())
 
-    handler.post(Runnable { Toast.makeText(baseContext, getString(R.string.handle_notification_now), Toast.LENGTH_LONG).show() })
+    handler.post(Runnable {
+      Toast.makeText(baseContext, getString(R.string.handle_notification_now), Toast.LENGTH_LONG).show()
+
+      remoteMessage.notification?.let {
+        val intent = Intent("MyData")
+        intent.putExtra("message", remoteMessage.data["text"]);
+        broadcaster?.sendBroadcast(intent);
+      }
+    })
+
+
   }
 
   companion object {
