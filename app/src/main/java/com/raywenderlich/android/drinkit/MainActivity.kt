@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity() {
           // [END retrieve_current_token]
         } else {
           //You won't be able to send notifications to this device
+          Log.w(TAG, "Device doesn't have google play services")
         }
       }
 
@@ -108,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
   private val messageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent) {
-      notification_text.setText(intent.extras?.getString("message"))
+      notification_text.text = intent.extras?.getString("message")
     }
   }
 
